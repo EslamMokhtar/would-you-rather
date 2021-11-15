@@ -1,25 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import { _getUsers, _getQuestions } from "./_DATA";
+import Home from "./components/Home";
+import Login from "./components/Login";
+import NavBar from "./components/NavBar";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./styles.css";
 
-function App() {
+export default function App() {
+  const [users, setUsers] = useState({});
+  const [questions, setQuestions] = useState({});
+
+  const getData = async () => {
+    const users = await _getUsers();
+    const questions = await _getQuestions();
+    setUsers(users);
+    setQuestions(questions);
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+  const authUser = "tylermcginnis";
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <div className="App">
+        <NavBar users={users} authUser={authUser} />
+        <Routes>
+          <Route path="/login" element={<Login users={users} />} />
+          <Route
+            path="/"
+            element={
+              <Home questions={questions} users={users} authUser={authUser} />
+            }
+          />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
-
-export default App;
