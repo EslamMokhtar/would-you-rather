@@ -12,6 +12,8 @@ import Divider from "@mui/material/Divider";
 import Avatar from "@mui/material/Avatar";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import CircularProgress from "@mui/material/CircularProgress";
+import Stack from "@mui/material/Stack";
 
 const Login = (props) => {
   const [user, setUser] = React.useState("");
@@ -19,6 +21,7 @@ const Login = (props) => {
   const handleChange = (event) => {
     setUser(event.target.value);
   };
+
   return (
     <Grid
       container
@@ -55,14 +58,20 @@ const Login = (props) => {
                 label="User"
                 onChange={handleChange}
               >
-                {Object.keys(props.users).map((key) => (
-                  <MenuItem value={props.users[key].id} key={key}>
-                    <ListItemIcon>
-                      <Avatar src={props.users[key].avatarURL} />
-                    </ListItemIcon>
-                    <ListItemText>{props.users[key].name}</ListItemText>
-                  </MenuItem>
-                ))}
+                {Object.keys(props.users).length > 1 ? (
+                  Object.keys(props.users).map((key) => (
+                    <MenuItem value={props.users[key].id} key={key}>
+                      <ListItemIcon>
+                        <Avatar src={props.users[key].avatarURL} />
+                      </ListItemIcon>
+                      <ListItemText>{props.users[key].name}</ListItemText>
+                    </MenuItem>
+                  ))
+                ) : (
+                  <Stack alignItems="center" justifyContent="center">
+                    <CircularProgress sx={{ m: 10 }} />
+                  </Stack>
+                )}
               </Select>
             </FormControl>
           </Grid>
@@ -70,7 +79,9 @@ const Login = (props) => {
             <Button
               sx={{ mb: 3, mt: 4, width: 400 }}
               variant="contained"
-              onClick={() => user.length > 1 && console.log(user)}
+              onClick={() => {
+                user.length > 1 && props.loginClickHandler(user);
+              }}
             >
               Login
             </Button>
