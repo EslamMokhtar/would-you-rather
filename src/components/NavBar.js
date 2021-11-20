@@ -8,6 +8,11 @@ import Stack from "@mui/material/Stack";
 import Avatar from "@mui/material/Avatar";
 import { NavLink } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import { useSelector, useDispatch } from "react-redux";
+import { authActions } from "../store/auth-slice";
+import { useNavigate } from "react-router-dom";
 
 const theme = createTheme({
   components: {
@@ -17,20 +22,39 @@ const theme = createTheme({
           textTransform: "none",
           color: "white",
           "&.active": {
-            background: "#ff4573"
+            background: "#ff4573",
           },
           "&:hover": {
-            background: "#ff4573"
-          }
-        }
-      }
-    }
-  }
+            background: "#ff4573",
+          },
+        },
+      },
+    },
+  },
 });
 const Login = (props) => {
+  const isAuth = useSelector((state) => state.auth.isAauth);
+  const authUser = useSelector((state) => state.auth.authUser);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleLogout = () => {
+    setAnchorEl(null);
+    if (isAuth) {
+      dispatch(authActions.logout());
+      return navigate("/login");
+    }
+  };
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+      <AppBar position="static" >
         <Toolbar>
           <Stack
             direction="row"
@@ -53,28 +77,44 @@ const Login = (props) => {
               />
             </IconButton>
             <ThemeProvider theme={theme}>
-              <Stack direction="row" spacing={10}>
-                <Button component={NavLink} to="/">
-                  Home
-                </Button>
-                <Button component={NavLink} to="/new-question">
-                  New Question
-                </Button>
-                <Button component={NavLink} to="/leader-board">
-                  Leader Board
-                </Button>
-              </Stack>
+              {isAuth && (
+                <Stack direction="row" spacing={10}>
+                  <Button component={NavLink} to="/">
+                    Home
+                  </Button>
+                  <Button component={NavLink} to="/new-question">
+                    New Question
+                  </Button>
+                  <Button component={NavLink} to="/leader-board">
+                    Leader Board
+                  </Button>
+                </Stack>
+              )}
             </ThemeProvider>
+            <IconButton onClick={handleClick} size="small" sx={{ ml: 2 }}>
+              <Avatar
+                src={props.users[authUser] && props.users[authUser].avatarURL}
+                variant="contained"
+              ></Avatar>
+            </IconButton>
 
-            <Avatar
-              src={
-                props.users[props.authUser] &&
-                props.users[props.authUser].avatarURL
-              }
-              variant="contained"
-              component={NavLink}
-              to="/login"
-            ></Avatar>
+            <Menu
+              id="basic-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              MenuListProps={{
+                "aria-labelledby": "basic-button",
+              }}
+            >
+              {!isAuth ? (
+                <MenuItem onClick={handleClose} component={NavLink} to="/login">
+                  Login
+                </MenuItem>
+              ) : (
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              )}
+            </Menu>
           </Stack>
         </Toolbar>
       </AppBar>

@@ -14,14 +14,18 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
+import { authActions } from "../store/auth-slice";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Login = (props) => {
+  const dispatch = useDispatch();
   const [user, setUser] = React.useState("");
 
   const handleChange = (event) => {
     setUser(event.target.value);
   };
-
+  const navigate = useNavigate();
   return (
     <Grid
       container
@@ -29,9 +33,9 @@ const Login = (props) => {
       direction="column"
       alignItems="center"
       justifyContent="center"
-      style={{ minHeight: "100vh" }}
+      style={{ minHeight: "80vh" }}
     >
-      <Paper elevation={3} sx={{ mb: 10 }}>
+      <Paper elevation={3}>
         <Box sx={{ minWidth: 500 }}>
           <Grid item>
             <Typography variant="h5" sx={{ mt: 3 }}>
@@ -77,10 +81,13 @@ const Login = (props) => {
           </Grid>
           <Grid item>
             <Button
-              sx={{ mb: 3, mt: 4, width: 400 }}
+              sx={{ mb: 3, mt: 4, width: 400,borderRadius: 25 }}
               variant="contained"
               onClick={() => {
-                user.length > 1 && props.loginClickHandler(user);
+                if (user.length > 1) {
+                  dispatch(authActions.login(user));
+                  navigate("/");
+                }
               }}
             >
               Login

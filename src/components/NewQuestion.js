@@ -1,6 +1,6 @@
 import * as React from "react";
 import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
+import LoadingButton from "@mui/lab/LoadingButton";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
@@ -8,8 +8,15 @@ import CardContent from "@mui/material/CardContent";
 import Card from "@mui/material/Card";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
+import { saveQuestion } from "../store/data-actions";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router";
 
 const NewQuestion = (props) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const author = useSelector((state) => state.auth.authUser);
+  const [loading, setLoading] = React.useState(false);
   const [options, setOptions] = React.useState({
     optionOne: "",
     optionTwo: "",
@@ -21,9 +28,23 @@ const NewQuestion = (props) => {
       return { ...pre, [name]: value };
     });
   };
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (options.optionOne.length > 1 && options.optionTwo.length > 1) {
-      return console.log(options);
+      setLoading(true);
+      try {
+        await dispatch(
+          saveQuestion({
+            optionOneText: options.optionOne,
+            optionTwoText: options.optionTwo,
+            author: author,
+          })
+        );
+        setLoading(false);
+        return navigate("/?tab=1");
+      } catch (error) {
+        setLoading(false);
+        console.log(error);
+      }
     }
   };
   return (
@@ -65,9 +86,14 @@ const NewQuestion = (props) => {
                 onChange={handleChange}
               />
               <Box sx={{ pt: 3 }}>
-                <Button fullWidth variant="contained" onClick={handleSubmit}>
+                <LoadingButton
+                  loading={loading}
+                  fullWidth
+                  variant="contained"
+                  onClick={handleSubmit}
+                >
                   Submit
-                </Button>
+                </LoadingButton>
               </Box>
             </Stack>
           </CardContent>

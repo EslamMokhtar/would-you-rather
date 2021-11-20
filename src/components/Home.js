@@ -1,19 +1,16 @@
 import * as React from "react";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import Divider from "@mui/material/Divider";
-import Stack from "@mui/material/Stack";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import Card from "@mui/material/Card";
 import CircularProgress from "@mui/material/CircularProgress";
 import PropTypes from "prop-types";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import Badge from "@mui/material/Badge";
+import { useSelector } from "react-redux";
+import ListCard from "../cards/ListCard";
+import { Button, Typography } from "@mui/material";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -43,195 +40,150 @@ function a11yProps(index) {
 }
 
 const Home = (props) => {
+  const authUser = useSelector((state) => state.auth.authUser);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab");
-  const [value, setValue] = React.useState(+tab || 0);
+  const [value, setValue] = React.useState(0);
+  const [offset, setOffset] = React.useState(0);
 
   React.useEffect(() => {
     if (!tab) {
-      setSearchParams({ tab: 0 });
+      return setSearchParams({ tab: 0 });
     }
+    setValue(+tab);
   }, [setSearchParams, tab]);
   const handleChange = (event, newValue) => {
     setSearchParams({ tab: newValue });
     setValue(newValue);
   };
 
-  const answeredQuestions = Object.keys(props.questions).filter(
-    (key) => props.users[props.authUser].answers[key]
-  );
-  const unansweredQuestions = Object.keys(props.questions).filter(
-    (key) => !props.users[props.authUser].answers[key]
-  );
+  const answeredQuestions = Object.keys(props.questions)
+    .sort((a, b) => props.questions[b].timestamp - props.questions[a].timestamp)
+    .filter((key) => props.users[authUser].answers[key]);
+
+  const unansweredQuestions = Object.keys(props.questions)
+    .sort((a, b) => props.questions[b].timestamp - props.questions[a].timestamp)
+    .filter((key) => !props.users[authUser].answers[key]);
+
+  React.useEffect(() => {
+    window.onscroll = () => {
+      setOffset(window.pageYOffset);
+    };
+  }, []);
+
   return (
-    <Box sx={{ width: "100%" }}>
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs
-          sx={{ textAlign: "center" }}
-          value={value}
-          onChange={handleChange}
-          centered
+    <>
+      <Box sx={{ width: "100%", position: "relative" }}>
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
         >
-          <Tab
-            iconPosition="end"
-            icon={
-              <Badge badgeContent={answeredQuestions.length} color="success" />
-            }
-            label={`Answered Questions \xa0`}
-            {...a11yProps(0)}
-          />
-          <Tab
-            iconPosition="end"
-            icon={
-              <Badge badgeContent={unansweredQuestions.length} color="error" />
-            }
-            label={`Unanswered Questions \xa0`}
-            {...a11yProps(1)}
-          />
-        </Tabs>
-      </Box>
-      {props.users[props.authUser] ? (
-        <TabPanel value={value} index={0}>
+          {offset > 0 && (
+            <Button
+              sx={{
+                position: "fixed",
+                bottom: 50,
+                right: 50,
+                borderRadius: 25,
+              }}
+              size="large"
+              variant="contained"
+              onClick={() =>
+                window.scrollTo({
+                  top: 0,
+                  left: 0,
+                  behavior: "smooth",
+                })
+              }
+            >
+              <ArrowDropUpIcon />
+            </Button>
+          )}
+          <Tabs
+            sx={{
+              textAlign: "center",
+            }}
+            value={value}
+            onChange={handleChange}
+            centered
+          >
+            <Tab
+              iconPosition="end"
+              icon={
+                <Badge
+                  badgeContent={answeredQuestions.length}
+                  color="success"
+                />
+              }
+              label={`Answered Questions \xa0`}
+              {...a11yProps(0)}
+            />
+            <Tab
+              iconPosition="end"
+              icon={
+                <Badge
+                  badgeContent={unansweredQuestions.length}
+                  color="error"
+                />
+              }
+              label={`Unanswered Questions \xa0`}
+              {...a11yProps(1)}
+            />
+          </Tabs>
+        </Box>
+        {answeredQuestions.length === 0 && (
+          <Typography variant="h4" sx={{ mt: 5 }}>
+            No more questions!
+          </Typography>
+        )}
+        {props.users[authUser] ? (
+          <TabPanel value={value} index={0}>
+            <Grid
+              container
+              direction="column"
+              alignItems="center"
+              justifyContent="center"
+            >
+              {answeredQuestions.map((key) => (
+                <ListCard
+                  key={key}
+                  id={key}
+                  users={props.users}
+                  questions={props.questions}
+                />
+              ))}
+            </Grid>
+          </TabPanel>
+        ) : (
+          <CircularProgress sx={{ mt: 20 }} />
+        )}
+        <TabPanel value={value} index={1}>
           <Grid
             container
             direction="column"
             alignItems="center"
             justifyContent="center"
           >
-            {answeredQuestions.map((key) => (
-              <Grid item key={key}>
-                <Card
-                  sx={{
-                    width: 450,
-                    maxHeight: 200,
-                    mb: 5,
-                  }}
-                >
-                  <CardContent sx={{ flex: "1 0 auto" }}>
-                    <Typography
-                      component="div"
-                      variant="h6"
-                      sx={{ textAlign: "left" }}
-                    >
-                      {props.users[props.questions[key].author].name} asks:
-                    </Typography>
-                    <Divider variant="middle" />
-                    <Stack spacing={1} direction="row">
-                      <CardMedia
-                        component="img"
-                        sx={{ width: 150 }}
-                        image={
-                          props.users[props.questions[key].author].avatarURL
-                        }
-                        alt="User image"
-                      />
-                      <div />
-                      <div />
-                      <div />
-                      <Stack spacing={2}>
-                        <Typography
-                          component="div"
-                          variant="body1"
-                          sx={{ mt: 2 }}
-                        >
-                          Would You Rather
-                        </Typography>
-                        <Typography
-                          variant="subtitle2"
-                          color="text.secondary"
-                          component="div"
-                        >
-                          _{props.questions[key].optionOne.text}_
-                        </Typography>
-
-                        <Button
-                          variant="outlined"
-                          sx={{ width: 200 }}
-                          component={Link}
-                          to={`/questions/${key}`}
-                        >
-                          View Poll
-                        </Button>
-                      </Stack>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
+            {unansweredQuestions.length === 0 && (
+              <Typography variant="h4" sx={{ mt: 5 }}>
+                No more questions!
+              </Typography>
+            )}
+            {unansweredQuestions.map((key) => (
+              <ListCard
+                key={key}
+                id={key}
+                users={props.users}
+                questions={props.questions}
+              />
             ))}
           </Grid>
         </TabPanel>
-      ) : (
-        <CircularProgress sx={{ mt: 20 }} />
-      )}
-      <TabPanel value={value} index={1}>
-        <Grid
-          container
-          direction="column"
-          alignItems="center"
-          justifyContent="center"
-        >
-          {unansweredQuestions.map((key) => (
-            <Grid item key={key}>
-              <Card
-                sx={{
-                  display: "flex",
-                  width: 450,
-                  maxHeight: 200,
-                  mb: 5,
-                }}
-              >
-                <CardContent sx={{ flex: "1 0 auto" }}>
-                  <Typography
-                    component="div"
-                    variant="h6"
-                    sx={{ textAlign: "left" }}
-                  >
-                    {props.users[props.questions[key].author].name} asks:
-                  </Typography>
-                  <Divider variant="middle" />
-                  <Stack spacing={1} direction="row">
-                    <CardMedia
-                      component="img"
-                      sx={{ width: 150 }}
-                      image={props.users[props.questions[key].author].avatarURL}
-                      alt="User image"
-                    />
-                    <div />
-                    <div />
-                    <div />
-                    <Stack spacing={2}>
-                      <Typography
-                        component="div"
-                        variant="body1"
-                        sx={{ mt: 2 }}
-                      >
-                        Would You Rather
-                      </Typography>
-                      <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        component="div"
-                      >
-                        _{props.questions[key].optionOne.text}_
-                      </Typography>
-
-                      <Button
-                        variant="outlined"
-                        sx={{ width: 200 }}
-                        component={Link}
-                        to={`/questions/${key}`}
-                      >
-                        View Poll
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </TabPanel>
-    </Box>
+      </Box>
+    </>
   );
 };
 
