@@ -49,7 +49,7 @@ const Home = (props) => {
 
   React.useEffect(() => {
     if (!tab) {
-      return setSearchParams({ tab: 0 });
+      return setSearchParams({ tab: 1 });
     }
     setValue(+tab);
   }, [setSearchParams, tab]);

@@ -12,6 +12,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useSelector } from "react-redux";
 import UnansweredCard from "../cards/UnansweredCard";
 import AnsweredCard from "../cards/AnsweredCard";
+import Error from "./Error";
 
 const Question = (props) => {
   const urlParams = useParams();
@@ -20,6 +21,11 @@ const Question = (props) => {
   const [submit, setSubmit] = React.useState(false);
   const questionId = urlParams.id;
   const answeredQuestion = props.users[authUser].answers[questionId];
+  const checkQid = Object.keys(props.questions).includes(questionId);
+
+  if (!checkQid) {
+    return <Error />;
+  }
 
   const submitUrl = () => {
     setSubmit(true);

@@ -13,6 +13,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { useSelector, useDispatch } from "react-redux";
 import { authActions } from "../store/auth-slice";
 import { useNavigate } from "react-router-dom";
+import { Typography } from "@mui/material";
 
 const theme = createTheme({
   components: {
@@ -54,7 +55,7 @@ const Login = (props) => {
   };
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" >
+      <AppBar position="static">
         <Toolbar>
           <Stack
             direction="row"
@@ -82,22 +83,29 @@ const Login = (props) => {
                   <Button component={NavLink} to="/">
                     Home
                   </Button>
-                  <Button component={NavLink} to="/new-question">
+                  <Button component={NavLink} to="/add">
                     New Question
                   </Button>
-                  <Button component={NavLink} to="/leader-board">
+                  <Button component={NavLink} to="/leaderboard">
                     Leader Board
                   </Button>
                 </Stack>
               )}
             </ThemeProvider>
-            <IconButton onClick={handleClick} size="small" sx={{ ml: 2 }}>
-              <Avatar
-                src={props.users[authUser] && props.users[authUser].avatarURL}
-                variant="contained"
-              ></Avatar>
-            </IconButton>
-
+            <Stack
+              direction="row"
+              justifyContent="center"
+              alignItems="center"
+              spacing={1}
+            >
+              {isAuth && <Typography>{props.users[authUser].name}</Typography>}
+              <IconButton onClick={handleClick} size="small" sx={{ ml: 2 }}>
+                <Avatar
+                  src={props.users[authUser] && props.users[authUser].avatarURL}
+                  variant="contained"
+                ></Avatar>
+              </IconButton>
+            </Stack>
             <Menu
               id="basic-menu"
               anchorEl={anchorEl}

@@ -16,12 +16,13 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
 import { authActions } from "../store/auth-slice";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 
 const Login = (props) => {
   const dispatch = useDispatch();
   const [user, setUser] = React.useState("");
-
+  let location = useLocation();
+  const from = location.state?.from?.pathname || "/";
   const handleChange = (event) => {
     setUser(event.target.value);
   };
@@ -86,7 +87,7 @@ const Login = (props) => {
               onClick={() => {
                 if (user.length > 1) {
                   dispatch(authActions.login(user));
-                  navigate("/");
+                  navigate(from, { replace: true });
                 }
               }}
             >

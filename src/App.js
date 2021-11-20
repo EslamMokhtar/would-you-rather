@@ -36,7 +36,7 @@ const App = () => {
           }
         />
         <Route
-          path="/leader-board"
+          path="/leaderboard"
           element={
             <RequireAuth>
               <LeaderBoard users={users} />
@@ -44,7 +44,7 @@ const App = () => {
           }
         />
         <Route
-          path="/new-question"
+          path="/add"
           element={
             <RequireAuth>
               <NewQuestion />
